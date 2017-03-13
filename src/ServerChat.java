@@ -7,14 +7,17 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JOptionPane;
+
 
 public class ServerChat extends javax.swing.JFrame {
 
     public ServerChat() {
         initComponents();
     }
-
+    static ServerSocket serverSocket;
+    static Socket socket;
+    static DataInputStream entrada;
+    static DataOutputStream salida;
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -86,7 +89,22 @@ public class ServerChat extends javax.swing.JFrame {
 
     private void benviarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_benviarActionPerformed
 
+        try {
+            String msg = "";
 
+            msg = txtfield.getText().trim();
+
+            salida.writeUTF(msg);
+            salida.flush();
+            txtarea.append("\n Servidor :" + txtfield.getText());
+            //txtarea.append(System.getProperty("line.separator"));
+            
+            txtfield.setText("");
+            
+            
+        } catch (IOException ex) {
+            Logger.getLogger(ServerChat.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_benviarActionPerformed
 
     private void txtfieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtfieldActionPerformed
@@ -100,21 +118,7 @@ public class ServerChat extends javax.swing.JFrame {
                 new ServerChat().setVisible(true);
             }
         });
-        ServerChat sc = new ServerChat();
-        sc.Conexion();
-        sc.recibirDatos();
-
-    }
-
-    DataInputStream entrada = null;
-    DataOutputStream salida = null;
-    boolean conectado = false;
-    ServerSocket serverSocket;
-    Socket socket;
-
-    public void Conexion() {
-
-        try {
+         try {
             System.out.println("Creando Socket Servidor");
 
             serverSocket = new ServerSocket();
@@ -130,32 +134,30 @@ public class ServerChat extends javax.swing.JFrame {
             socket = serverSocket.accept();
 
             System.out.println("Conexion establecida");
+            
+            String msgin="";
+            
+            entrada = new DataInputStream(socket.getInputStream());
+            salida = new DataOutputStream(socket.getOutputStream());
+
+            while (!msgin.equals("exit")) {
+
+                msgin = entrada.readUTF();
+                txtarea.setText(txtarea.getText().trim() + "\n Cliente:" + msgin);
+
+            }
 
         } catch (IOException ex) {
             Logger.getLogger(serverchat.ServerChat.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-
-    public void recibirDatos() throws IOException {
-
-        while(true){
-            String mensajes = null;
-
-            entrada = new DataInputStream(socket.getInputStream());
-            mensajes = entrada.readUTF();
-           JOptionPane.showMessageDialog(this, mensajes);
-            }
-            
-            
-        
-
-    }
-
+}
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton benviar;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea txtarea;
+    private static javax.swing.JTextArea txtarea;
     private javax.swing.JTextField txtfield;
     // End of variables declaration//GEN-END:variables
 }
+
